@@ -1,0 +1,28 @@
+{
+  "name": "mkgame",
+  "version": "1.0.0",
+  "description": "Quickly set up a new PhaserJS game project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chadananda/mkgame.git"
+  },
+  "keywords": [
+    "phaserjs",
+    "make",
+    "game",
+    "game",
+    "template",
+    "phaser",
+    "template"
+  ],
+  "author": "Chad Jones <chadananda@gmail.com> (http://notepad.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chadananda/mkgame/issues"
+  },
+  "homepage": "https://github.com/chadananda/mkgame#readme"
+}
