@@ -1,6 +1,6 @@
 {
   "name": "mkgame",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Quickly set up a new PhaserJS game project",
   "main": "index.js",
   "scripts": {
@@ -9,6 +9,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chadananda/mkgame.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "phaserjs",
@@ -24,5 +27,23 @@
   "bugs": {
     "url": "https://github.com/chadananda/mkgame/issues"
   },
-  "homepage": "https://github.com/chadananda/mkgame#readme"
+  "homepage": "https://github.com/chadananda/mkgame#readme",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "dependencies": {
+    "@octokit/auth-basic": "^1.4.5",
+    "@octokit/rest": "^18.0.0",
+    "chalk": "^4.1.0",
+    "clear": "^0.1.0",
+    "clui": "^0.3.6",
+    "figlet": "^1.4.0",
+    "inquirer": "^7.2.0"
+  },
+  "devDependencies": {
+    "git-user-email": "git://github.com/codejamninja/git-user-email.git#npm",
+    "git-user-name": "^2.0.0",
+    "git-username": "^1.0.0",
+    "open": "^7.0.4"
+  }
 }
