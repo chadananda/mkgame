@@ -1,6 +1,6 @@
 {
   "name": "mkgame",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Quickly set up a new PhaserJS game project",
   "main": "index.js",
   "scripts": {
