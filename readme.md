@@ -1,7 +1,8 @@
-# mkgame -- a CLI wizard to fire up a new PhaserJS game project
+# mkgame
+### A CLI wizard to generate GitHub-hosted PhaserJS game projects
 
 <p align="center">
-  <img src="sshot.png" height="400">
+  <img src="sshot.png" height="800">
 </p>
 
 CLI tool for quickly setting up a new game project -- including local dev server, GitHUB repository and GitHub pages hosting of the deployed game
