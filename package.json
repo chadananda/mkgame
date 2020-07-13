@@ -1,6 +1,6 @@
 {
   "name": "mkgame",
-  "version": "1.0.34",
+  "version": "1.0.4",
   "description": "Quickly set up a new PhaserJS game project",
   "main": "index.js",
   "scripts": {
@@ -41,12 +41,10 @@
     "clear": "^0.1.0",
     "clui": "^0.3.6",
     "figlet": "^1.4.0",
-    "inquirer": "^7.2.0"
-  },
-  "devDependencies": {
+    "inquirer": "^7.2.0",
     "git-user-email": "git://github.com/codejamninja/git-user-email.git#npm",
     "git-user-name": "^2.0.0",
     "git-username": "^1.0.0",
     "open": "^7.0.4"
-  }
+  },
 }
