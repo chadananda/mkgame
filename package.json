@@ -1,6 +1,6 @@
 {
   "name": "mkgame",
-  "version": "1.0.3",
+  "version": "1.0.34",
   "description": "Quickly set up a new PhaserJS game project",
   "main": "index.js",
   "scripts": {
@@ -9,6 +9,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chadananda/mkgame.git"
+  },
+  "bin": {
+    "mkgame": "./index.js"
   },
   "publishConfig": {
     "access": "public"
