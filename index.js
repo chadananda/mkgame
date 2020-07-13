@@ -53,39 +53,47 @@ async function init() {
   replacements.author_name = gitUser() || ''
   replacements.author_email = gitEmail() || ''
   replacements.gitUser = gitUsername() || ''
-  if (!replacements.author_name || !replacements.author_email || !replacements.gitUser) exit('Could not find GIT user info')
 
   // Game Title
   def = (args.slice(2)[0] || '')
   replacements.game_title = def
   if (!def || def.length<1) {
-    input = await promptForTitle()
-    replacements.game_title = (input.title || '').trim()
+    input = await prompt('Game Title')
+    replacements.game_title = (input.res || '').trim()
   }
   if (!replacements.game_title) exit('Game Title is required!')
 
+  // Game Description
+  input = await prompt('Game Description')
+  replacements.game_description = input.res.trim()
+
   // Project Name
   def = replacements.game_title.toLowerCase().trim().replace(/ /g, '-')
-  input = await promptForProjectName(def)
-  replacements.project_name = input.proj.trim()
+  input = await prompt('Repository Name', def)
+  replacements.project_name = input.res.trim()
   if (!replacements.project_name) exit('Project repository name is required!')
+  if (fs.existsSync(replacements.project_name)) exit('Folder already exists: '+ chalk.red(replacements.project_name))
 
-  if (fs.existsSync(replacements.project_name)) {
-    console.log('\n\n')
-    console.warn(chalk.red.bold(' ⚠️  WARNING: ') + ' cannot continue, folder already exists: '+ chalk.red(replacements.project_name))
-    console.log('\n\n')
-    process.exit()
-  }
+  // github userid
+  input = await prompt('Github user id', replacements.gitUser)
+  replacements.gitUser = (input.res || '').trim()
+  if (!replacements.gitUser) exit('Github user is required!')
 
-  // Game Description
-  input = await promptForDescription()
-  replacements.game_description = input.desc.trim()
+  // Author name
+  input = await prompt('Author name', replacements.author_name)
+  replacements.author_name = (input.res || '').trim()
+  if (!replacements.author_name) exit('Author name is required!')
+
+  // Author email
+  input = await prompt('Author email', replacements.author_email)
+  replacements.author_email = (input.res || '').trim()
+  if (!replacements.author_email) exit('Author name is required!')
 
 
   // Public Game URL
   def = `${replacements.gitUser.toLowerCase()}.github.io/${replacements.project_name}`
-  input = await promptForURL(def)
-  replacements.game_domain = input.url.trim()
+  input = await prompt('Domain (you can change this later)', def)
+  replacements.game_domain = input.res.trim()
   replacements.git_repo = `git@github.com:${replacements.gitUser}/${replacements.project_name}.git`
 
   await confirm(
@@ -106,22 +114,6 @@ async function init() {
 
   process.exit()
 
-/*
-  details:
-    github_user
-
-
-  replacements:
-
-  [[game_title]]
-  [[project_name]]
-  [[game_description]]
-  [[author_name]]
-  [[author_email]]
-  [[game_domain]]
-
-
-*/
 
 
   function exit(msg) {
@@ -131,31 +123,13 @@ async function init() {
     process.exit()
   }
 
-
-  async function promptForTitle() {
+  async function prompt(msg, def='') {
     console.log('')
-    return inquirer.prompt([{
-      message: "🤖 Game Title: ",
-      name: "title"    /* Pass your questions in here */
-    }])
+    let prmpt = { message: `🤖 ${msg}: `, name: "res" }
+    if (def) prmpt.default = def
+    return inquirer.prompt([prmpt])
   }
 
-  async function promptForProjectName(title) {
-    console.log('')
-    return inquirer.prompt([{
-      message: "🤖 Repository Name: ",
-      name: "proj",    /* Pass your questions in here */
-      default: title
-    }])
-  }
-
-  async function promptForDescription() {
-    console.log('')
-    return inquirer.prompt([{
-      message: "🤖 Project Description: ",
-      name: "desc",    /* Pass your questions in here */
-    }])
-  }
 
   async function confirm(message) {
     console.log()
@@ -164,15 +138,6 @@ async function init() {
       rl.close()
       resolve(ans)
     }))
-  }
-
-  async function promptForURL(def) {
-    console.log('')
-    return inquirer.prompt([{
-      message: "🤖 Public Game URL (you can change this later): ",
-      name: "url",    /* Pass your questions in here */
-      default: def
-    }])
   }
 
 
@@ -190,7 +155,6 @@ async function init() {
      }
    })
  }
-
 
  async function generateProject(replacements) {
     let r = replacements // because the word is just too long
@@ -242,6 +206,7 @@ async function init() {
     // build and deploy game
     console.log(chalk.green.bold('\n ✅ ') + chalk.gray('Deploying game to GitHub'))
     execSync('npm run --silent deploy')
+
     console.log('\n 🥳 🥳 🥳 \n',
       chalk.green('You can share your game at: ')+chalk.blue.underline('http://'+r.game_domain),
      '\n\n\n')
