@@ -26,6 +26,7 @@ const gitEmail = require('git-user-email')
 const { execSync } = require('child_process')
 const open = require('open')
 const readline = require('readline')
+const { exit } = require('process')
 const template = 'https://github.com/chadananda/phaser-auto-template'
 
 var replacements = {
@@ -49,22 +50,25 @@ async function init() {
 
   let input, def
 
-  replacements.author_name = gitUser()
-  replacements.author_email = gitEmail()
-  replacements.gitUser = gitUsername()
+  replacements.author_name = gitUser() || ''
+  replacements.author_email = gitEmail() || ''
+  replacements.gitUser = gitUsername() || ''
+  if (!replacements.author_name || !replacements.author_email || !replacements.gitUser) exit('Could not find GIT user info')
 
   // Game Title
-  def = args.slice(2)[0] || ''
+  def = (args.slice(2)[0] || '')
   replacements.game_title = def
   if (!def || def.length<1) {
     input = await promptForTitle()
-    replacements.game_title = input.title.trim()
+    replacements.game_title = (input.title || '').trim()
   }
+  if (!replacements.game_title) exit('Game Title is required!')
 
   // Project Name
   def = replacements.game_title.toLowerCase().trim().replace(/ /g, '-')
   input = await promptForProjectName(def)
   replacements.project_name = input.proj.trim()
+  if (!replacements.project_name) exit('Project repository name is required!')
 
   if (fs.existsSync(replacements.project_name)) {
     console.log('\n\n')
@@ -76,6 +80,7 @@ async function init() {
   // Game Description
   input = await promptForDescription()
   replacements.game_description = input.desc.trim()
+
 
   // Public Game URL
   def = `${replacements.gitUser.toLowerCase()}.github.io/${replacements.project_name}`
@@ -92,7 +97,7 @@ async function init() {
   await open( `${template}/generate`)
 
   await confirm(
-    chalk.red.bold('Hit enter when GitHub has finished creading your new repository "')+
+    chalk.red.bold('Hit enter when GitHub has finished creating your new repository "')+
     chalk.green.bold(replacements.project_name)+
     chalk.red.bold('"')
   )
@@ -119,7 +124,12 @@ async function init() {
 */
 
 
-
+  function exit(msg) {
+    console.log('\n\n')
+    console.warn(chalk.red.bold(' ⚠️  WARNING: ') + msg)
+    console.log('\n\n')
+    process.exit()
+  }
 
 
   async function promptForTitle() {
@@ -185,55 +195,59 @@ async function init() {
  async function generateProject(replacements) {
     let r = replacements // because the word is just too long
     let tdir = process.cwd() +'/'+ r.project_name
+    let checkGit
     // console.log('Generating repo: '+r.project_name, 'at', `${template}/generate`, )
 
     // create and cd to project dir
-    console.log(chalk.green.bold('\n ✅ ') + chalk.gray('Creating project folder: '+r.project_name))
+    console.log(chalk.green.bold('\n ✅ ') + chalk.gray('Creating project folder: ')+ chalk.green(r.project_name))
     if (!fs.existsSync(tdir)) fs.mkdirSync(tdir)
 
     // clone repo
-    console.log(chalk.green.bold('\n ✅ ') + chalk.gray('Initializing git from template: '+template))
-    execSync(`git clone -q '${replacements.git_repo}' '${tdir}'`)
+    console.log(chalk.green.bold('\n ✅ ') + chalk.gray('Cloning repository: ')+chalk.green(r.git_repo))
+    execSync(`git clone -q '${r.git_repo}' '${tdir}'`)
 
     // update files
     console.log(chalk.green.bold('\n ✅ ') + chalk.gray('Customizing template files and pushing changes to GitHub...'))
-    await replaceStuff(tdir, replacements)
+    await replaceStuff(tdir, r)
     process.chdir(tdir)
-    execSync('git commit -am "customized template with search and replace"')
-    execSync('git push')
+    if (execSync('git status').toString().indexOf('nothing to commit')===-1) {
+      execSync('git commit -am "customized template with search and replace"')
+      execSync('git push -q')
+    }
 
     // add CNAME file if needed
-    let def_domain = `${replacements.gitUser.toLowerCase()}.github.io/${replacements.project_name}`
-    if (replacements.game_domain!=def_domain) {
+    let def_domain = `${r.gitUser.toLowerCase()}.github.io/${r.project_name}`
+    if (r.game_domain!=def_domain) {
       console.log(chalk.green.bold('\n ✅ ') + chalk.gray('Adding custom domain CNAME file...'))
       let output = tdir +'/public/CNAME'
-      fs.writeFileSync(output, replacements.game_domain)
+      fs.writeFileSync(output, r.game_domain)
       // add file to GIT
       let cmd = 'git add '
       execSync('git add ./public/CNAME')
-      execSync('git commit -am "added custom CNAME file to /public dir"')
-      execSync('git push')
+      if (execSync('git status').toString().indexOf('nothing to commit')===-1) {
+        execSync('git commit -am "added custom CNAME file to /public dir"')
+        execSync('git push -q')
+      }
     }
 
-    // build and deploy
+    // install NPM modules and commit package-lock.json
     console.log(chalk.green.bold('\n ✅ ') + chalk.gray('Installing NPM modules, this can take a while!'))
-    execSync('npm install')
+    execSync('npm install --silent')
     execSync('git add package-lock.json')
-    execSync('git commit -am "added package-lock.json to repo"')
-    execSync('git push')
+    if (execSync('git status').toString().indexOf('nothing to commit')===-1) {
+      execSync('git commit -am "added package-lock.json to repo"')
+      execSync('git push -q')
+    }
 
-    // build
-    console.log(chalk.green.bold('\n ✅ ') + chalk.gray('Building game...'))
-    execSync('npm run build')
+    // build and deploy game
+    console.log(chalk.green.bold('\n ✅ ') + chalk.gray('Deploying game to GitHub'))
+    execSync('npm run --silent deploy')
+    console.log('\n 🥳 🥳 🥳 \n',
+      chalk.green('You can share your game at: ')+chalk.blue.underline('http://'+r.game_domain),
+     '\n\n\n')
 
-    // build
-    console.log(chalk.green.bold('\n ✅ ') + chalk.gray('Deploying game to GitHub, you can view at: http://'+r.game_domain+'\n\n\n'))
-    execSync('npm run deploy')
-
-    console.log('🥳 🥳 🥳 \n\n\n')
 
   }
-
 }
 
 
